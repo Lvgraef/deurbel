@@ -1,0 +1,8 @@
+//
+// Created by lvgra on 26/11/2025.
+//
+
+#ifndef DEURBEL_ULTRASONE_SENSOR_HPP
+#define DEURBEL_ULTRASONE_SENSOR_HPP
+
+#endif //DEURBEL_ULTRASONE_SENSOR_HPP

@@ -1,8 +1,26 @@
 #include <Arduino.h>
+#include "buzzer_main.hpp"
+#include "button_main.hpp"
+
+bool buzzerMode = false;
+
 void setup() {
-// write your initialization code here
+    // Set the mode (either button or buzzer)
+    buzzerMode = digitalRead(26);
+
+    // Setup depending on the mode
+    if (buzzerMode) {
+        buzzer_mode::setup();
+    } else {
+        button_mode::setup();
+    }
 }
 
 void loop() {
-// write your code here
+    // Loop depending on the mode
+    if (buzzerMode) {
+        buzzer_mode::loop();
+    } else {
+        button_mode::loop();
+    }
 }

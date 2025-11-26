@@ -1,0 +1,8 @@
+//
+// Created by lvgra on 26/11/2025.
+//
+
+#ifndef DEURBEL_POTENTIOMETER_HPP
+#define DEURBEL_POTENTIOMETER_HPP
+
+#endif //DEURBEL_POTENTIOMETER_HPP
