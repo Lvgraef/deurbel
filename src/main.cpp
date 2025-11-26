@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "../include/buzzer_mode/buzzer_main.hpp"
-#include "../include/button_mode/button_main.hpp"
+#include "buzzer_mode/buzzer_main.hpp"
+#include "button_mode/button_main.hpp"
 
 bool buzzerMode = false;
 
