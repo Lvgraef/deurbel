@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <thread>
+
 #include "buzzer_mode/buzzer_main.hpp"
 #include "button_mode/button_main.hpp"
 
@@ -7,6 +9,8 @@ bool buzzerMode = false;
 void setup() {
     // Set the mode (either button or buzzer)
     buzzerMode = digitalRead(26);
+
+    Serial.begin(9600);
 
     // Setup depending on the mode
     if (buzzerMode) {

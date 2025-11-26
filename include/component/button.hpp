@@ -1,11 +1,20 @@
 #pragma once
+#include <functional>
 
 namespace component {
-    class button {
+    class Button {
     public:
-        button(int pin);
+        virtual ~Button() = default;
 
+        explicit Button(const int& pin);
+
+        void init() const;
+        void update();
+
+        virtual void callback() = 0;
     private:
+        unsigned long lastActivation = 0;
         const int pin;
+        bool state = false;
     };
 }
