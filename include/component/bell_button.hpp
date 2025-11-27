@@ -7,6 +7,7 @@ namespace component {
     public:
         explicit BellButton(const int &pin);
 
-        void callback() override;
     };
+
+    static void callback();
 }

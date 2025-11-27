@@ -1,31 +1,18 @@
 #include "component/button.hpp"
 #include "arduino.h"
 
-#define debounce_time 10
-
-int counter = 0;
-
-component::Button::Button(const int& pin) : pin(pin) {
+component::Button::Button(const int& pin, void (*callback)()) : pin(pin), callback(callback) {
 }
 
 void component::Button::init() const {
     pinMode(pin, INPUT);
+    attachInterrupt(digitalPinToInterrupt(pin), callback, RISING);
 }
 
-void component::Button::update() {
-    const bool input = digitalRead(pin);
-    if (millis() - lastActivation < 10) {
-        return;
+bool component::cooldown(unsigned long &lastActivation) {
+    if (millis() - lastActivation >= cooldownTime) {
+        lastActivation = millis();
+        return true;
     }
-    if (state) {
-        if (!input) {
-            state = false;
-        }
-    } else {
-        if (input) {
-            lastActivation = millis();
-            state = true;
-            callback();
-        }
-    }
+    return false;
 }

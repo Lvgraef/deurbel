@@ -1,20 +1,21 @@
 #pragma once
-#include <functional>
+#include <esp32-hal.h>
 
 namespace component {
+    static constexpr int cooldownTime = 200;
+
     class Button {
     public:
         virtual ~Button() = default;
 
-        explicit Button(const int& pin);
+        explicit Button(const int& pin, void (*callback)());
 
         void init() const;
-        void update();
-
-        virtual void callback() = 0;
-    private:
-        unsigned long lastActivation = 0;
+    protected:
         const int pin;
-        bool state = false;
+    private:
+        void (*callback)();
     };
+
+    bool cooldown(unsigned long& lastActivation);
 }

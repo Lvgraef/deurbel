@@ -1,13 +1,17 @@
 #include "button_mode/button_main.hpp"
 
 #include <WiFi.h>
-#include "component/button.hpp"
+#include "component/door_button.hpp"
+#include "component/potentiometer.hpp"
 
-std::uint8_t clientMacAddresses[1][6] = {{244, 101, 11, 52, 27, 40}};
-size_t selectedClient = 0;
+component::DoorButton doorButton(4);
+component::Potentiometer potentiometer(39);
 
 void button_mode::setup() {
+    doorButton.init();
+    potentiometer.init();
 }
 
 void button_mode::loop() {
+    Serial.println(std::to_string(potentiometer.getValue()).c_str());
 }

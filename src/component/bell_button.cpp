@@ -1,5 +1,8 @@
 #include "component/bell_button.hpp"
 
-component::BellButton::BellButton(const int &pin) : Button(pin) {
+component::BellButton::BellButton(const int &pin) : Button(pin, component::callback) {
 }
 
+static void component::callback() {
+
+}
