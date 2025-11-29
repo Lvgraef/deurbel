@@ -2,7 +2,7 @@
 #include <esp32-hal.h>
 
 namespace component {
-    static constexpr int cooldownTime = 200;
+    static constexpr int debounceTime = 50;
 
     class Button {
     public:
@@ -17,5 +17,5 @@ namespace component {
         void (*callback)();
     };
 
-    bool cooldown(unsigned long& lastActivation);
+    bool debounce(unsigned long& lastActivation, bool& oldState, const bool& currentState);
 }

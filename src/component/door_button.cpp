@@ -4,14 +4,20 @@
 #include "utils/utils.hpp"
 
 unsigned long lastActivation = 0;
+bool oldState = false;
+int component::pin = -1;
 
-component::DoorButton::DoorButton(const int &pin) : Button(pin, component::callback) {
-}
-
-static void component::callback() {
-    if (!cooldown(lastActivation)) {
+static void callback() {
+    if (!component::debounce(lastActivation, oldState, digitalRead(component::pin))) {
         return;
     }
 
     utils::selectedClient++;
+    Serial.println(("test" + std::to_string(utils::selectedClient)).c_str());
+}
+
+void component::createDoorButton(const int& pin) {
+    component::pin = pin;
+    const Button button(pin, callback);
+    button.init();
 }

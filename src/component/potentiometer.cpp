@@ -12,4 +12,3 @@ void component::Potentiometer::init() const {
 float component::Potentiometer::getValue() const {
     return analogRead(pin) / 4095.0;
 }
-
