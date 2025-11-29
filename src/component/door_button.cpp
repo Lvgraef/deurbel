@@ -13,7 +13,6 @@ static void callback() {
     }
 
     utils::selectedClient++;
-    Serial.println(("test" + std::to_string(utils::selectedClient)).c_str());
 }
 
 void component::createDoorButton(const int& pin) {
