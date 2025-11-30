@@ -1,18 +1,16 @@
 #pragma once
-#include <cstdint>
 #include <esp_attr.h>
 #include <arduino.h>
 
 namespace component {
     // mm/µs
-    static constexpr float soundSpeed = 0.343;
+    static constexpr float soundSpeed = 0.0343;
 
     template <uint8_t ECHO, uint8_t TRIG> class UltrasoneSensor {
     public:
-        explicit UltrasoneSensor(const std::function<void()> &callback) : callback(callback) {
-        }
+        explicit UltrasoneSensor() = default;
 
-        static void init() {
+        void init() const {
             pinMode(ECHO, INPUT);
             pinMode(TRIG, OUTPUT);
 
@@ -20,22 +18,23 @@ namespace component {
         }
 
         void update() const {
-            if (updated) {
-                updated = false;
-                callback();
-            }
+            triggerTime = micros();
+            digitalWrite(TRIG, HIGH);
         }
 
-    private:
-        std::function<void()> callback;
+        [[nodiscard]] uint16_t getDistance() const {
+            return distance;
+        }
 
+
+    private:
+        static volatile inline uint16_t distance = 65535;
         static inline unsigned long triggerTime = 0;
-        static inline unsigned long echoTime = 0;
         static volatile inline bool updated = false;
 
         static void IRAM_ATTR isr() {
-            echoTime = micros();
-            updated = true;
+            const auto time = triggerTime - micros();
+            distance = time * soundSpeed;
         }
     };
 }
