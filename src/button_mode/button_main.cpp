@@ -7,7 +7,6 @@
 component::Potentiometer potentiometer(39);
 
 void button_mode::setup() {
-    component::createDoorButton(4);
     potentiometer.init();
 }
 

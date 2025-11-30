@@ -1,21 +1,28 @@
 #pragma once
+#include <Arduino.h>
 #include <esp32-hal.h>
 
+#include "utils/utils.hpp"
+
 namespace component {
+    bool debounce(unsigned long& lastActivation, bool& oldState, const bool& currentState);
+
+
     static constexpr int debounceTime = 50;
 
-    class Button {
+    template <uint8_t PIN> class Button {
     public:
         virtual ~Button() = default;
 
-        explicit Button(const int& pin, void (*callback)());
+        constexpr explicit Button(void (*callback)()) : pin(PIN), callback(callback) { }
 
-        void init() const;
+        void init() const {
+            pinMode(pin, INPUT);
+            attachInterrupt(digitalPinToInterrupt(pin), callback, CHANGE);
+        }
     protected:
         const int pin;
     private:
         void (*callback)();
     };
-
-    bool debounce(unsigned long& lastActivation, bool& oldState, const bool& currentState);
 }

@@ -3,10 +3,20 @@
 #include "button.hpp"
 
 namespace component {
-    class BellButton final : public Button {
+    template <uint8_t PIN> class BellButton {
     public:
-        explicit BellButton(const int &pin);
-    };
+        constexpr explicit BellButton() : Button<PIN>(PIN, &BellButton::isr) { }
+    private:
+        static inline unsigned long lastActivation;
+        static inline bool oldState;
 
-    static void callback();
+
+        static void IRAM_ATTR isr() {
+            if (!debounce(lastActivation, oldState, digitalRead(PIN))) {
+                return;
+            }
+
+            // do something
+        }
+    };
 }
