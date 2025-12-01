@@ -2,28 +2,30 @@
 #include <esp_attr.h>
 #include <arduino.h>
 
+#include "ultrasone_interface.hpp"
+
 namespace component {
     // mm/µs
     static constexpr float soundSpeed = 0.0343;
 
-    template <uint8_t ECHO, uint8_t TRIG> class UltrasoneSensor {
+    template <uint8_t ECHO, uint8_t TRIG> class UltrasoneSensor : public UltrasoneInterface {
     public:
         explicit UltrasoneSensor(const Adafruit_MCP23X17& mcp) : mcp(mcp) {
         }
 
-        void init() {
+        void init() override {
             pinMode(ECHO, INPUT);
             mcp.pinMode(TRIG, OUTPUT);
 
             attachInterrupt(ECHO, isr, RISING);
         }
 
-        void update() const {
+        void update() const override {
             triggerTime = micros();
             digitalWrite(TRIG, HIGH);
         }
 
-        [[nodiscard]] uint16_t getDistance() const {
+        [[nodiscard]] uint16_t getDistance() const override {
             return distance;
         }
 

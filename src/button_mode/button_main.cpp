@@ -2,69 +2,77 @@
 
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_MCP23X17.h>
+#include <memory>
+
 #include "component/bell_button.hpp"
 #include "component/door_button.hpp"
+#include "component/sync_button.hpp"
 #include "component/potentiometer.hpp"
 #include "component/ultrasone_sensor.hpp"
 
+#define MAX_CLIENTS = 16;
+
+std::vector<utils::Client> button_mode::clients;
+size_t button_mode::selectedClient = 0;
+
 Adafruit_MCP23X17 mcp;
 component::Potentiometer potentiometer(39);
-component::Potentiometer potentiometer2(14);
-component::UltrasoneSensor<0, 13> ultrasoneSensor(mcp);
-component::UltrasoneSensor<1,25> ultrasoneSensor2(mcp);
+
+std::unique_ptr<component::UltrasoneInterface> ultrasoneSensors[16] = {
+    std::make_unique<component::UltrasoneSensor<0, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<1, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<2, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<3, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<4, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<5, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<6, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<7, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<8, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<9, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<10, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<11, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<12, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<13, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<14, 13>>(mcp),
+    std::make_unique<component::UltrasoneSensor<15, 13>>(mcp),
+
+};
+
+bool ultrasoneStates[16] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+unsigned long lastChangedSensors[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 component::DoorButton<4> doorButton();
 component::BellButton<36> bellButton();
+component::SyncButton<15> syncButton();
 LiquidCrystal_I2C display(0x20, 16, 2);
 
 constexpr int sensorChangeFilterTime = 500;
-
-bool sensor1State = false;
-unsigned long lastChangedSensor1 = 0;
-bool sensor2State = false;
-unsigned long lastChangedSensor2 = 0;
-
 void ultrasoneCallback() {
 
 }
 
+//todo add the manual override button so that it doesnt swtich up until 1 minute after youve pressed it or the bell is rang
 void updateUltrasoneSensors() {
-    ultrasoneSensor.update();
-    ultrasoneSensor2.update();
     const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
-    const int16_t distance2Input = utils::getDistanceInput(potentiometer2.getValue());
-    if (ultrasoneSensor.getDistance() < distanceInput) {
-        if (!sensor1State) {
-            if (millis() - lastChangedSensor1 > sensorChangeFilterTime) {
-                sensor1State = true;
-                utils::selectedClient = 0;
-                ultrasoneCallback();
-                lastChangedSensor1 = millis();
+    for (int i = 0; i < button_mode::clients.size(); i++) {
+        const auto sensor = std::move(ultrasoneSensors[i]);
+        sensor->update();
+        if (sensor->getDistance() < distanceInput) {
+            if (!ultrasoneStates[i]) {
+                if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
+                    ultrasoneStates[i] = true;
+                    button_mode::selectedClient = i;
+                    // what is this again?!?!?
+                    ultrasoneCallback();
+                    lastChangedSensors[i] = millis();
+                }
             }
-        }
-    } else {
-        if (sensor1State) {
-            if (millis() - lastChangedSensor1 > sensorChangeFilterTime) {
-                sensor1State = false;
-                ultrasoneCallback();
-                lastChangedSensor1 = millis();
-            }
-        }
-    }
-    if (ultrasoneSensor2.getDistance() < distance2Input) {
-        if (!sensor2State) {
-            if (millis() - lastChangedSensor2 > sensorChangeFilterTime) {
-                sensor2State = true;
-                utils::selectedClient = 1;
-                ultrasoneCallback();
-                lastChangedSensor2 = millis();
-            }
-        }
-    } else {
-        if (sensor2State) {
-            if (millis() - lastChangedSensor2 > sensorChangeFilterTime) {
-                sensor2State = false;
-                ultrasoneCallback();
-                lastChangedSensor2 = millis();
+        } else {
+            if (ultrasoneStates[i]) {
+                if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
+                    ultrasoneStates[i] = false;
+                    ultrasoneCallback();
+                    lastChangedSensors[i] = millis();
+                }
             }
         }
     }
@@ -72,9 +80,6 @@ void updateUltrasoneSensors() {
 
 void button_mode::setup() {
     potentiometer.init();
-    potentiometer2.init();
-    ultrasoneSensor.init();
-    ultrasoneSensor2.init();
     display.init();
     display.backlight();
     display.setCursor(0, 0);

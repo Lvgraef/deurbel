@@ -1,8 +1,7 @@
 #include "utils/utils.hpp"
 
 //example this should register with a pairing button!
-utils::Client clientMacAddresses[1] = { {{244, 101, 11, 52, 27, 40}, "Luc" }};
-size_t utils::selectedClient = 0;
+//utils::Client clientMacAddresses[1] = { {{244, 101, 11, 52, 27, 40}, "Luc" }};
 
 template <typename T, std::size_t N> T& utils::getArrayIndexSafe(T (&array)[N], const std::size_t& index) {
     return array[index % N];
