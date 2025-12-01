@@ -5,7 +5,7 @@
 namespace component {
     template <uint8_t PIN> class BellButton {
     public:
-        constexpr explicit BellButton() : Button<PIN>(PIN, &BellButton::isr) { }
+        constexpr explicit BellButton() : Button<PIN>(&BellButton::isr, false) { }
     private:
         static inline unsigned long lastActivation;
         static inline bool oldState;

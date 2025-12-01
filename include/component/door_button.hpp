@@ -7,7 +7,7 @@
 namespace component {
     template <uint8_t PIN> class DoorButton {
     public:
-        constexpr explicit DoorButton() : Button<PIN>(&DoorButton::isr) { }
+        constexpr explicit DoorButton() : Button<PIN>(&DoorButton::isr, false) { }
     private:
         static inline unsigned long lastActivation = 0;
         static inline bool oldState = false;

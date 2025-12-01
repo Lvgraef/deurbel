@@ -1,15 +1,17 @@
 #include "button_mode/button_main.hpp"
 
 #include <LiquidCrystal_I2C.h>
+#include <Adafruit_MCP23X17.h>
 #include "component/bell_button.hpp"
 #include "component/door_button.hpp"
 #include "component/potentiometer.hpp"
 #include "component/ultrasone_sensor.hpp"
 
+Adafruit_MCP23X17 mcp;
 component::Potentiometer potentiometer(39);
 component::Potentiometer potentiometer2(14);
-component::UltrasoneSensor<12, 13> ultrasoneSensor;
-component::UltrasoneSensor<26,25> ultrasoneSensor2;
+component::UltrasoneSensor<0, 13> ultrasoneSensor(mcp);
+component::UltrasoneSensor<1,25> ultrasoneSensor2(mcp);
 component::DoorButton<4> doorButton();
 component::BellButton<36> bellButton();
 LiquidCrystal_I2C display(0x20, 16, 2);
@@ -76,6 +78,7 @@ void button_mode::setup() {
     display.init();
     display.backlight();
     display.setCursor(0, 0);
+    mcp.begin_I2C(0x21);
 }
 
 void button_mode::loop() {

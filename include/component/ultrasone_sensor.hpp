@@ -8,11 +8,12 @@ namespace component {
 
     template <uint8_t ECHO, uint8_t TRIG> class UltrasoneSensor {
     public:
-        explicit UltrasoneSensor() = default;
+        explicit UltrasoneSensor(const Adafruit_MCP23X17& mcp) : mcp(mcp) {
+        }
 
-        void init() const {
+        void init() {
             pinMode(ECHO, INPUT);
-            pinMode(TRIG, OUTPUT);
+            mcp.pinMode(TRIG, OUTPUT);
 
             attachInterrupt(ECHO, isr, RISING);
         }
@@ -28,6 +29,7 @@ namespace component {
 
 
     private:
+        Adafruit_MCP23X17 mcp;
         static volatile inline uint16_t distance = 65535;
         static inline unsigned long triggerTime = 0;
         static volatile inline bool updated = false;

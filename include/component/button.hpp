@@ -12,13 +12,14 @@ namespace component {
     public:
         virtual ~Button() = default;
 
-        constexpr explicit Button(void (*callback)()) : callback(callback) { }
+        constexpr explicit Button(void (*callback)(), const bool& pullup) : callback(callback), pullup(pullup) { }
 
         void init() const {
-            pinMode(PIN, INPUT);
+            pinMode(PIN, pullup ? INPUT_PULLUP : INPUT_PULLDOWN);
             attachInterrupt(digitalPinToInterrupt(PIN), callback, CHANGE);
         }
     private:
         void (*callback)();
+        const bool pullup;
     };
 }
