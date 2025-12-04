@@ -24,10 +24,10 @@ unsigned volatile long button_mode::overrideTime = ULONG_MAX;
 
 component::Potentiometer potentiometer(39);
 
-std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[11] = {
+std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[10] = {
     std::make_unique<component::UltrasoneSensor>(26, 13),
     std::make_unique<component::UltrasoneSensor>(25, 13),
-    std::make_unique<component::UltrasoneSensor>(37, 13),
+    std::make_unique<component::UltrasoneSensor>(33, 13),
     std::make_unique<component::UltrasoneSensor>(14, 13),
     std::make_unique<component::UltrasoneSensor>(5, 13),
     std::make_unique<component::UltrasoneSensor>(19, 13),
@@ -35,11 +35,10 @@ std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[11] = {
     std::make_unique<component::UltrasoneSensor>(12, 13),
     std::make_unique<component::UltrasoneSensor>(27, 13),
     std::make_unique<component::UltrasoneSensor>(32, 13),
-    std::make_unique<component::UltrasoneSensor>(14, 13),
 };
 
-bool ultrasoneStates[12] = {false, false, false, false, false, false, false, false, false, false, false, false};
-unsigned long lastChangedSensors[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+bool ultrasoneStates[10] = {false, false, false, false, false, false, false, false, false, false};
+unsigned long lastChangedSensors[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 component::DoorButton<34> doorButton;
 component::BellButton<36> bellButton;
@@ -52,27 +51,20 @@ constexpr int sensorChangeFilterTime = 100;
 [[noreturn]] void updateUltrasoneSensors(void* params) {
     while (true) {
         //set this to false when the bell is rung!
-        if (button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit)) {
-            Serial.println("SKIP");
-            continue;
+        if (button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit)) {continue;
         }
         button_mode::overrideTime = ULONG_MAX;
         button_mode::overridden = false;
         const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
-        Serial.println(std::to_string(distanceInput).c_str());
 
         for (int i = 0; i < button_mode::clients.size(); i++) {
             ultrasoneSensors[i]->update();
-            if (i == 0) {
-                //Serial.println(std::to_string(ultrasoneSensors[i]->getDistance()).c_str());
-            }
             if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
                 if (!ultrasoneStates[i]) {
                     if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
                         ultrasoneStates[i] = true;
                         button_mode::selectedClient = i;
                         lastChangedSensors[i] = millis();
-                        Serial.println("button_mode::selectedClient");
                     }
                 }
             } else {
