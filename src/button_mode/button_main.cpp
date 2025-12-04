@@ -22,33 +22,22 @@ bool volatile button_mode::overridden = false;
 unsigned volatile long button_mode::overrideTime = ULONG_MAX;
 
 
-Adafruit_MCP23X17 mcp;
 component::Potentiometer potentiometer(39);
 
-std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[16] = {
-    std::make_unique<component::UltrasoneSensor>(mcp, 0, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 1, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 2, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 3, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 4, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 5, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 6, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 7, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 8, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 9, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 10, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 11, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 12, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 13, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 14, 13),
-    std::make_unique<component::UltrasoneSensor>(mcp, 15, 13),
+std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[6] = {
+    std::make_unique<component::UltrasoneSensor>(32, 14),
+    std::make_unique<component::UltrasoneSensor>(1, 13),
+    std::make_unique<component::UltrasoneSensor>(2, 13),
+    std::make_unique<component::UltrasoneSensor>(3, 13),
+    std::make_unique<component::UltrasoneSensor>(4, 13),
+    std::make_unique<component::UltrasoneSensor>(5, 13)
 
 };
 
 bool ultrasoneStates[16] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
 unsigned long lastChangedSensors[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-component::DoorButton<4> doorButton;
+component::DoorButton<34> doorButton;
 component::BellButton<36> bellButton;
 component::SyncButton<15> syncButton;
 
@@ -68,7 +57,10 @@ constexpr int sensorChangeFilterTime = 500;
         const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
         for (int i = 0; i < button_mode::clients.size(); i++) {
             ultrasoneSensors[i]->update();
-            if (ultrasoneSensors[i]->getDistance() < distanceInput) {
+            if (i == 0) {
+                Serial.println(std::to_string(ultrasoneSensors[i]->getDistance()).c_str());
+            }
+            if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
                 if (!ultrasoneStates[i]) {
                     if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
                         ultrasoneStates[i] = true;
@@ -109,13 +101,15 @@ void button_mode::setup() {
     bellButton.init();
     doorButton.init();
 
+    Wire.setClock(100000);
+
     if (!mcp.begin_I2C(0x20)) {
         Serial.println("GPIO expander init failed");
     }
 
     // For now add 2 clients:
     clients.push_back({{0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2}, "Luc"});
-    clients.push_back({{0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2}, "Raven"});
+    //clients.push_back({{0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2}, "Raven"});
 
     for (int i = 0; i < clients.size(); i++) {
         if (const auto& sensor = ultrasoneSensors[i]) {
@@ -135,6 +129,6 @@ void button_mode::loop() {
         if (const auto& sensor = ultrasoneSensors[i]) {
             sensor->update();
         }
-        delayMicroseconds(100000);
+        delay(5);
     }
 }

@@ -11,7 +11,6 @@ namespace component {
         explicit UltrasoneSensor(Adafruit_MCP23X17& mcp, const uint8_t& trigPin, const uint8_t& echoPin);
 
         void init();
-
         void update();
 
         [[nodiscard]] uint16_t getDistance() const;
