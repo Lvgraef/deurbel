@@ -13,7 +13,7 @@
 #define MAX_CLIENTS 16
 
 // one minute
-constexpr unsigned long overrideLimit = 60000;
+constexpr unsigned long overrideLimit = 30000;
 
 std::vector<utils::Client> button_mode::clients;
 size_t button_mode::selectedClient = 0;
@@ -24,18 +24,22 @@ unsigned volatile long button_mode::overrideTime = ULONG_MAX;
 
 component::Potentiometer potentiometer(39);
 
-std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[6] = {
-    std::make_unique<component::UltrasoneSensor>(32, 14),
-    std::make_unique<component::UltrasoneSensor>(1, 13),
-    std::make_unique<component::UltrasoneSensor>(2, 13),
-    std::make_unique<component::UltrasoneSensor>(3, 13),
-    std::make_unique<component::UltrasoneSensor>(4, 13),
-    std::make_unique<component::UltrasoneSensor>(5, 13)
-
+std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[11] = {
+    std::make_unique<component::UltrasoneSensor>(26, 13),
+    std::make_unique<component::UltrasoneSensor>(25, 13),
+    std::make_unique<component::UltrasoneSensor>(37, 13),
+    std::make_unique<component::UltrasoneSensor>(14, 13),
+    std::make_unique<component::UltrasoneSensor>(5, 13),
+    std::make_unique<component::UltrasoneSensor>(19, 13),
+    std::make_unique<component::UltrasoneSensor>(21, 13),
+    std::make_unique<component::UltrasoneSensor>(12, 13),
+    std::make_unique<component::UltrasoneSensor>(27, 13),
+    std::make_unique<component::UltrasoneSensor>(32, 13),
+    std::make_unique<component::UltrasoneSensor>(14, 13),
 };
 
-bool ultrasoneStates[16] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
-unsigned long lastChangedSensors[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+bool ultrasoneStates[12] = {false, false, false, false, false, false, false, false, false, false, false, false};
+unsigned long lastChangedSensors[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 component::DoorButton<34> doorButton;
 component::BellButton<36> bellButton;
@@ -43,22 +47,24 @@ component::SyncButton<15> syncButton;
 
 LiquidCrystal_I2C display(0x27, 16, 2);
 
-constexpr int sensorChangeFilterTime = 500;
+constexpr int sensorChangeFilterTime = 100;
 
 [[noreturn]] void updateUltrasoneSensors(void* params) {
     while (true) {
-        // set this too false when the bell is rung!
+        //set this to false when the bell is rung!
         if (button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit)) {
-            Serial.println(std::to_string((millis() - button_mode::overrideTime)).c_str());
+            Serial.println("SKIP");
             continue;
         }
         button_mode::overrideTime = ULONG_MAX;
         button_mode::overridden = false;
         const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
+        Serial.println(std::to_string(distanceInput).c_str());
+
         for (int i = 0; i < button_mode::clients.size(); i++) {
             ultrasoneSensors[i]->update();
             if (i == 0) {
-                Serial.println(std::to_string(ultrasoneSensors[i]->getDistance()).c_str());
+                //Serial.println(std::to_string(ultrasoneSensors[i]->getDistance()).c_str());
             }
             if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
                 if (!ultrasoneStates[i]) {
@@ -78,7 +84,7 @@ constexpr int sensorChangeFilterTime = 500;
                 }
             }
         }
-        vTaskDelay(50 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
     }
 }
 
@@ -103,13 +109,10 @@ void button_mode::setup() {
 
     Wire.setClock(100000);
 
-    if (!mcp.begin_I2C(0x20)) {
-        Serial.println("GPIO expander init failed");
-    }
 
     // For now add 2 clients:
     clients.push_back({{0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2}, "Luc"});
-    //clients.push_back({{0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2}, "Raven"});
+    clients.push_back({{0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2}, "Raven"});
 
     for (int i = 0; i < clients.size(); i++) {
         if (const auto& sensor = ultrasoneSensors[i]) {
@@ -120,8 +123,8 @@ void button_mode::setup() {
     xTaskCreate(updateUltrasoneSensors, "ultrasone_sensors", 4096, nullptr, 1, nullptr);
     xTaskCreate(updateLCDDisplay, "lcddisplay", 4096, nullptr, 1, nullptr);
 
+    pinMode(26, OUTPUT);
     pinMode(13, INPUT);
-    mcp.pinMode(0, OUTPUT);
 }
 
 void button_mode::loop() {
@@ -129,6 +132,6 @@ void button_mode::loop() {
         if (const auto& sensor = ultrasoneSensors[i]) {
             sensor->update();
         }
-        delay(5);
     }
+    delay(200);
 }

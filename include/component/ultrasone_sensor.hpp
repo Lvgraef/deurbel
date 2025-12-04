@@ -8,7 +8,7 @@ namespace component {
 
     class UltrasoneSensor {
     public:
-        explicit UltrasoneSensor(Adafruit_MCP23X17& mcp, const uint8_t& trigPin, const uint8_t& echoPin);
+        explicit UltrasoneSensor(const uint8_t& trigPin, const uint8_t& echoPin);
 
         void init();
         void update();
@@ -17,7 +17,6 @@ namespace component {
 
 
     private:
-        Adafruit_MCP23X17& mcp;
         const uint8_t echoPin;
         const uint8_t trigPin;
         uint16_t distance = 65535;

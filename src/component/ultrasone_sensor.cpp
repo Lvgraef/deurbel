@@ -1,22 +1,18 @@
 #include "component/ultrasone_sensor.hpp"
 
-component::UltrasoneSensor::UltrasoneSensor(Adafruit_MCP23X17 &mcp, const uint8_t &trigPin, const uint8_t &echoPin) : mcp(mcp), echoPin(echoPin), trigPin(trigPin) {
+component::UltrasoneSensor::UltrasoneSensor(const uint8_t &trigPin, const uint8_t &echoPin) : echoPin(echoPin), trigPin(trigPin) {
 }
 
 void component::UltrasoneSensor::init() {
     pinMode(echoPin, INPUT);
-    //mcp.pinMode(trigPin, OUTPUT);
     pinMode(trigPin, OUTPUT);
 }
 
 void component::UltrasoneSensor::update() {
-    //mcp.digitalWrite(trigPin, LOW);
     digitalWrite(trigPin, LOW);
     delayMicroseconds(2);
-    //mcp.digitalWrite(trigPin, HIGH);
     digitalWrite(trigPin, HIGH);
     delayMicroseconds(10);
-    //mcp.digitalWrite(trigPin, LOW);
     digitalWrite(trigPin, LOW);
 
     const unsigned long duration = pulseIn(echoPin, HIGH, 30000);
