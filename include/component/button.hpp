@@ -6,7 +6,7 @@ namespace component {
     bool debounce(unsigned long& lastActivation, bool& oldState, const bool& currentState);
 
 
-    static constexpr int debounceTime = 50;
+    static constexpr int debounceTime = 100;
 
     template <uint8_t PIN> class Button {
     public:

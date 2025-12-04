@@ -5,7 +5,7 @@
 #include "utils/utils.hpp"
 
 namespace component {
-    template <uint8_t PIN> class SyncButton {
+    template <uint8_t PIN> class SyncButton : public Button<PIN> {
     public:
         constexpr explicit SyncButton() : Button<PIN>(&SyncButton::isr, false) { }
 

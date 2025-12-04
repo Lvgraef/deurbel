@@ -2,10 +2,10 @@
 #include <esp32-hal.h>
 
 #include "button.hpp"
-#include "utils/utils.hpp"
+#include "button_mode/button_main.hpp"
 
 namespace component {
-    template <uint8_t PIN> class DoorButton {
+    template <uint8_t PIN> class DoorButton : public Button<PIN> {
     public:
         constexpr explicit DoorButton() : Button<PIN>(&DoorButton::isr, false) { }
     private:
@@ -17,8 +17,9 @@ namespace component {
             if (!debounce(lastActivation, oldState, digitalRead(PIN))) {
                 return;
             }
-
-            utils::selectedClient++;
+            button_mode::selectedClient++;
+            button_mode::overrideTime = millis();
+            button_mode::overridden = true;
         }
     };
 }

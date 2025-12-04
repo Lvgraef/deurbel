@@ -1,44 +1,26 @@
 #pragma once
-#include <esp_attr.h>
 #include <arduino.h>
-
-#include "ultrasone_interface.hpp"
+#include <Adafruit_MCP23X17.h>
 
 namespace component {
     // mm/µs
     static constexpr float soundSpeed = 0.0343;
 
-    template <uint8_t ECHO, uint8_t TRIG> class UltrasoneSensor : public UltrasoneInterface {
+    class UltrasoneSensor {
     public:
-        explicit UltrasoneSensor(const Adafruit_MCP23X17& mcp) : mcp(mcp) {
-        }
+        explicit UltrasoneSensor(Adafruit_MCP23X17& mcp, const uint8_t& trigPin, const uint8_t& echoPin);
 
-        void init() override {
-            pinMode(ECHO, INPUT);
-            mcp.pinMode(TRIG, OUTPUT);
+        void init();
 
-            attachInterrupt(ECHO, isr, RISING);
-        }
+        void update();
 
-        void update() const override {
-            triggerTime = micros();
-            digitalWrite(TRIG, HIGH);
-        }
-
-        [[nodiscard]] uint16_t getDistance() const override {
-            return distance;
-        }
+        [[nodiscard]] uint16_t getDistance() const;
 
 
     private:
-        Adafruit_MCP23X17 mcp;
-        static volatile inline uint16_t distance = 65535;
-        static inline unsigned long triggerTime = 0;
-        static volatile inline bool updated = false;
-
-        static void IRAM_ATTR isr() {
-            const auto time = triggerTime - micros();
-            distance = time * soundSpeed;
-        }
+        Adafruit_MCP23X17& mcp;
+        const uint8_t echoPin;
+        const uint8_t trigPin;
+        uint16_t distance = 65535;
     };
 }

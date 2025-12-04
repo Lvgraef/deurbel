@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -9,7 +8,8 @@ namespace utils {
         std::string name;
     };
 
-    template <typename T, std::size_t N> T& getArrayIndexSafe(T (&array)[N], const std::size_t& index);
-
+    template <typename T> T& getArrayIndexSafe(std::vector<T> array, const std::size_t& index) {
+        return array[index % array.size()];
+    }
     int16_t getDistanceInput(const float& percentage);
 }

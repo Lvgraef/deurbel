@@ -3,7 +3,7 @@
 #include "button.hpp"
 
 namespace component {
-    template <uint8_t PIN> class BellButton {
+    template <uint8_t PIN> class BellButton : public Button<PIN> {
     public:
         constexpr explicit BellButton() : Button<PIN>(&BellButton::isr, false) { }
 
