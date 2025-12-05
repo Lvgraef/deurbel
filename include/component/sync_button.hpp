@@ -13,7 +13,7 @@ namespace component {
             if (state) {
                 state = false;
 
-                // Sync
+                networking::Server::startPairing();
             }
         }
     private:

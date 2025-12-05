@@ -60,6 +60,10 @@ constexpr int sensorChangeFilterTime = 100;
     }
 }
 
+void ultrasoneStateChanged(bool state, int index) {
+    // Send a message to turn light on or off
+}
+
 void getUltrasoneDistances() {
     //set this to false when the bell is rung!
     if (!(button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit))) {
@@ -74,6 +78,7 @@ void getUltrasoneDistances() {
                         ultrasoneStates[i] = true;
                         networking::Server::selectPeer(i);
                         lastChangedSensors[i] = millis();
+                        ultrasoneStateChanged(true, i);
                     }
                 }
             } else {
@@ -81,6 +86,7 @@ void getUltrasoneDistances() {
                     if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
                         ultrasoneStates[i] = false;
                         lastChangedSensors[i] = millis();
+                        ultrasoneStateChanged(false, i);
                     }
                 }
             }
@@ -195,5 +201,7 @@ void button_mode::setup() {
 
 void button_mode::loop() {
     getUltrasoneDistances();
+    syncButton.update();
+    bellButton.update();
     delay(10);
 }

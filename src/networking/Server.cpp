@@ -34,12 +34,8 @@ void networking::Server::onDataSent(const uint8_t *mac, esp_now_send_status_t st
                   status == ESP_NOW_SEND_SUCCESS ? "OK" : "FAIL");
 }
 
-bool networking::Server::sendToPeer(int index, uint8_t msg) {
-    if (index < 0 || index >= peers.size()) {
-        Serial.println("[ERROR] Peer index out of range");
-        return false;
-    }
-    return esp_now_send(peers[index].clientMacAddress, &msg, 1) == ESP_OK;
+bool networking::Server::sendToPeer(const uint8_t msg) {
+    return esp_now_send(getSelectedPeer().clientMacAddress, &msg, 1) == ESP_OK;
 }
 
 bool networking::Server::sendToPeer(const uint8_t mac[6], uint8_t msg) {

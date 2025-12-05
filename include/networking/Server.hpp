@@ -30,7 +30,7 @@ namespace networking {
         /// @param index The index of the peer in the stored list
         /// @param msg The message to send (the max is the value 250)
         /// @return A boolean if sending the message was successful
-        static bool sendToPeer(int index, uint8_t msg);
+        static bool sendToPeer(uint8_t msg);
 
         /// This sends to a peer based on the mac of the peer
         /// @param mac The mac of the peer which should receive the message

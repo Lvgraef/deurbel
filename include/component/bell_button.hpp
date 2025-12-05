@@ -1,6 +1,7 @@
 #pragma once
 
 #include "button.hpp"
+#include "networking/Server.hpp"
 
 namespace component {
     template <uint8_t PIN> class BellButton : public Button<PIN> {
@@ -11,7 +12,7 @@ namespace component {
             if (state) {
                 state = false;
 
-                // bell
+                networking::Server::sendToPeer(networking::BEEP);
             }
         }
     private:
