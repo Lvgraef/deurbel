@@ -15,6 +15,9 @@ namespace component {
 
                 // This sends a message that rings the bell on the selected client.
                 networking::Server::sendToPeer(networking::BEEP);
+
+                // Enable the sensors
+                button_mode::overridden = false;
             }
         }
     private:

@@ -12,8 +12,8 @@
 
 #define MAX_CLIENTS 16
 
+// todo temporary
 uint8_t number = 0;
-
 
 // 30 seconds
 constexpr unsigned long overrideLimit = 30000;
@@ -21,9 +21,9 @@ constexpr unsigned long overrideLimit = 30000;
 bool volatile button_mode::overridden = false;
 unsigned volatile long button_mode::overrideTime = ULONG_MAX;
 
-
 component::Potentiometer potentiometer(39);
 
+// The setup supports 10 sensors/doors
 std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[10] = {
     std::make_unique<component::UltrasoneSensor>(26, 13),
     std::make_unique<component::UltrasoneSensor>(25, 13),
@@ -46,8 +46,10 @@ component::SyncButton<15> syncButton;
 
 LiquidCrystal_I2C display(0x27, 16, 2);
 
+/// A short cooldown period (100 ms) so that short errors in measurement won't continuously switch doors.
 constexpr int sensorChangeFilterTime = 100;
 
+/// Update all the ultrasone sensors
 [[noreturn]] void updateUltrasoneSensors(void* params) {
     while (true) {
         for (int i = 0; i < networking::Server::getPeerCount(); i++) {
@@ -60,19 +62,26 @@ constexpr int sensorChangeFilterTime = 100;
     }
 }
 
+/// Gets called when a sensor starts or stops detecting something.
+/// @param state Whether the sensor started or stopped a detection
+/// @param index The index of the sensor
 void ultrasoneStateChanged(bool state, int index) {
     // Send a message to turn light on or off
 }
 
+/// Handles the ultrasone sensor logic
 void getUltrasoneDistances() {
-    //set this to false when the bell is rung!
+    // Skip the ultrasone logic if the door is overridden.
     if (!(button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit))) {
         button_mode::overrideTime = ULONG_MAX;
         button_mode::overridden = false;
+
         const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
 
         for (int i = 0; i < networking::Server::getPeerCount(); i++) {\
+            // Filter out 0 measurements (invalid) and check if the sensor is within the threshold
             if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
+                // only do something on change
                 if (!ultrasoneStates[i]) {
                     if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
                         ultrasoneStates[i] = true;
@@ -82,6 +91,7 @@ void getUltrasoneDistances() {
                     }
                 }
             } else {
+                // only do something on change
                 if (ultrasoneStates[i]) {
                     if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
                         ultrasoneStates[i] = false;
@@ -94,6 +104,7 @@ void getUltrasoneDistances() {
     }
 }
 
+/// Updates the LCD display so it displays the number of the selected client/peer
 [[noreturn]] void updateLCDDisplay(void* params) {
     while (true) {
         const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
@@ -182,7 +193,6 @@ void button_mode::setup() {
     // Add 2 clients for testing purposes
     uint8_t one[6] = {0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2};
     uint8_t two[6] = {0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2};
-
     networking::Server::addPeer(one, 118);
     networking::Server::addPeer(two, 116);
 
@@ -194,9 +204,6 @@ void button_mode::setup() {
 
     xTaskCreate(updateUltrasoneSensors, "ultrasone_sensors", 4096, nullptr, 1, nullptr);
     xTaskCreate(updateLCDDisplay, "lcddisplay", 4096, nullptr, 1, nullptr);
-
-    pinMode(26, OUTPUT);
-    pinMode(13, INPUT);
 }
 
 void button_mode::loop() {
