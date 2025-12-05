@@ -1,9 +1,7 @@
 #include "button_mode/button_main.hpp"
 
 #include <LiquidCrystal_I2C.h>
-#include <Adafruit_MCP23X17.h>
 #include <memory>
-#include <SoftwareSerial.h>
 
 #include "component/bell_button.hpp"
 #include "component/door_button.hpp"
@@ -13,7 +11,6 @@
 
 #define MAX_CLIENTS 16
 
-SoftwareSerial serialInterface;
 uint8_t number = 0;
 
 
