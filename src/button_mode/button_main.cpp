@@ -50,32 +50,41 @@ constexpr int sensorChangeFilterTime = 100;
 
 [[noreturn]] void updateUltrasoneSensors(void* params) {
     while (true) {
-        //set this to false when the bell is rung!
-        if (!(button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit))) {
-            button_mode::overrideTime = ULONG_MAX;
-            button_mode::overridden = false;
-            const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
+        for (int i = 0; i < networking::Server::getPeerCount(); i++) {
+            if (const auto& sensor = ultrasoneSensors[i]) {
+                sensor->update();
+            }
+        }
 
-            for (int i = 0; i < networking::Server::getPeerCount(); i++) {\
-                if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
-                    if (!ultrasoneStates[i]) {
-                        if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
-                            ultrasoneStates[i] = true;
-                            networking::Server::selectPeer(i);
-                            lastChangedSensors[i] = millis();
-                        }
+        vTaskDelay(200 / portTICK_PERIOD_MS);
+    }
+}
+
+void getUltrasoneDistances() {
+    //set this to false when the bell is rung!
+    if (!(button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit))) {
+        button_mode::overrideTime = ULONG_MAX;
+        button_mode::overridden = false;
+        const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
+
+        for (int i = 0; i < networking::Server::getPeerCount(); i++) {\
+            if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
+                if (!ultrasoneStates[i]) {
+                    if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
+                        ultrasoneStates[i] = true;
+                        networking::Server::selectPeer(i);
+                        lastChangedSensors[i] = millis();
                     }
-                } else {
-                    if (ultrasoneStates[i]) {
-                        if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
-                            ultrasoneStates[i] = false;
-                            lastChangedSensors[i] = millis();
-                        }
+                }
+            } else {
+                if (ultrasoneStates[i]) {
+                    if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
+                        ultrasoneStates[i] = false;
+                        lastChangedSensors[i] = millis();
                     }
                 }
             }
         }
-        vTaskDelay(200 / portTICK_PERIOD_MS);
     }
 }
 
@@ -185,10 +194,6 @@ void button_mode::setup() {
 }
 
 void button_mode::loop() {
-    for (int i = 0; i < networking::Server::getPeerCount(); i++) {
-        if (const auto& sensor = ultrasoneSensors[i]) {
-            sensor->update();
-        }
-    }
-    delay(200);
+    getUltrasoneDistances();
+    delay(10);
 }
