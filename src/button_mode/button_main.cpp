@@ -53,30 +53,26 @@ constexpr int sensorChangeFilterTime = 100;
 [[noreturn]] void updateUltrasoneSensors(void* params) {
     while (true) {
         //set this to false when the bell is rung!
-        if (button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit)) {continue;
-        }
-        button_mode::overrideTime = ULONG_MAX;
-        button_mode::overridden = false;
-        const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
+        if (!(button_mode::overridden && (millis() - button_mode::overrideTime < overrideLimit))) {
+            button_mode::overrideTime = ULONG_MAX;
+            button_mode::overridden = false;
+            const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
 
-        for (int i = 0; i < button_mode::clients.size(); i++) {
-            ultrasoneSensors[i]->update();
-            if (i == 0) {
-                Serial.println(std::to_string(ultrasoneSensors[i]->getDistance()).c_str());
-            }
-            if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
-                if (!ultrasoneStates[i]) {
-                    if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
-                        ultrasoneStates[i] = true;
-                        button_mode::selectedClient = i;
-                        lastChangedSensors[i] = millis();
+            for (int i = 0; i < button_mode::clients.size(); i++) {
+                if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
+                    if (!ultrasoneStates[i]) {
+                        if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
+                            ultrasoneStates[i] = true;
+                            button_mode::selectedClient = i;
+                            lastChangedSensors[i] = millis();
+                        }
                     }
-                }
-            } else {
-                if (ultrasoneStates[i]) {
-                    if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
-                        ultrasoneStates[i] = false;
-                        lastChangedSensors[i] = millis();
+                } else {
+                    if (ultrasoneStates[i]) {
+                        if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
+                            ultrasoneStates[i] = false;
+                            lastChangedSensors[i] = millis();
+                        }
                     }
                 }
             }
