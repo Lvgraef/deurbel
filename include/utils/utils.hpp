@@ -5,7 +5,7 @@
 namespace utils {
     struct Client {
         std::uint8_t clientMacAddress[6];
-        std::string name;
+        std::uint8_t number;
     };
 
     template <typename T> T& getArrayIndexSafe(std::vector<T> array, const std::size_t& index) {

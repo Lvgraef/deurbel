@@ -3,6 +3,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_MCP23X17.h>
 #include <memory>
+#include <SoftwareSerial.h>
 
 #include "component/bell_button.hpp"
 #include "component/door_button.hpp"
@@ -11,6 +12,10 @@
 #include "component/ultrasone_sensor.hpp"
 
 #define MAX_CLIENTS 16
+
+SoftwareSerial serialInterface;
+uint8_t number = 0;
+
 
 // one minute
 constexpr unsigned long overrideLimit = 30000;
@@ -82,7 +87,7 @@ constexpr int sensorChangeFilterTime = 100;
 
 [[noreturn]] void updateLCDDisplay(void* params) {
     while (true) {
-        const std::string& displayName = utils::getArrayIndexSafe(button_mode::clients, button_mode::selectedClient).name;
+        const std::string displayName = std::to_string(utils::getArrayIndexSafe(button_mode::clients, button_mode::selectedClient).number);
 
         display.clear();
         display.print(displayName.c_str());
@@ -91,7 +96,66 @@ constexpr int sensorChangeFilterTime = 100;
     }
 }
 
+void inputNumber() {
+    int collected = 0;
+    int result = 0;
+    while (collected < 3) {
+        if (Serial2.available()) {
+            Serial2.println("available");
+            switch(Serial2.read()) {
+                case 0xE1 :
+                    result = result * 10 + 1;
+                    collected++;
+                    break;
+                case 0xE2 :
+                    result = result * 10 + 2;
+                    collected++;
+                    break;
+                case 0xE3 :
+                    result = result * 10 + 3;
+                    collected++;
+                    break;
+                case 0xE4 :
+                    result = result * 10 + 4;
+                    collected++;
+                    break;
+                case 0xE5 :
+                    result = result * 10 + 5;
+                    collected++;
+                    break;
+                case 0xE6 :
+                    result = result * 10 + 6;
+                    collected++;
+                    break;
+                case 0xE7 :
+                    result = result * 10 + 7;
+                    collected++;
+                    break;
+                case 0xE8 :
+                    result = result * 10 + 8;
+                    collected++;
+                    break;
+                case 0xE9 :
+                    result = result * 10 + 9;
+                    collected++;
+                    break;
+                case 0xEB :
+                    result = result * 10 + 0;
+                    collected++;
+                    break;
+                default:
+                    collected++;
+                    break;
+            }
+        }
+    }
+    number = min(255, result);
+}
+
 void button_mode::setup() {
+    Serial2.begin(9600, SERIAL_8N1, 7, 8);
+    inputNumber();
+
     potentiometer.init();
     display.init();
     display.backlight();
@@ -103,8 +167,8 @@ void button_mode::setup() {
 
 
     // For now add 2 clients:
-    clients.push_back({{0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2}, "Luc"});
-    clients.push_back({{0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2}, "Raven"});
+    clients.push_back({{0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2}, 118});
+    clients.push_back({{0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2}, 116});
 
     for (int i = 0; i < clients.size(); i++) {
         if (const auto& sensor = ultrasoneSensors[i]) {
