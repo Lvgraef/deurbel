@@ -61,6 +61,9 @@ constexpr int sensorChangeFilterTime = 100;
 
         for (int i = 0; i < button_mode::clients.size(); i++) {
             ultrasoneSensors[i]->update();
+            if (i == 0) {
+                Serial.println(std::to_string(ultrasoneSensors[i]->getDistance()).c_str());
+            }
             if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
                 if (!ultrasoneStates[i]) {
                     if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {

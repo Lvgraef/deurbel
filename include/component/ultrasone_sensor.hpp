@@ -1,6 +1,5 @@
 #pragma once
 #include <arduino.h>
-#include <Adafruit_MCP23X17.h>
 
 namespace component {
     // mm/µs
