@@ -9,6 +9,7 @@ namespace component {
     public:
         constexpr explicit SyncButton() : Button<PIN>(&SyncButton::isr, false) { }
 
+        /// This should be continuously called to do expensive operations when the button has been pressed.
         void update() {
             if (state) {
                 state = false;
@@ -21,7 +22,7 @@ namespace component {
         static inline bool oldState = false;
         static inline volatile bool state = false;
 
-
+        /// This interrupt is called when the pin state changes from high to low or low to high
         static void IRAM_ATTR isr() {
             if (!debounce(lastActivation, oldState, digitalRead(PIN))) {
                 return;

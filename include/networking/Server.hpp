@@ -38,12 +38,19 @@ namespace networking {
         /// @return A boolean if sending the message was successful
         static bool sendToPeer(const uint8_t mac[6], uint8_t msg);
 
+        /// Select a peer
+        /// @param peer The index of the peer to select
         static void selectPeer(int peer);
 
+        /// Cycle to the next peer
         static void cyclePeer();
 
+        /// Get the currently selected peer
+        /// @return Returns a Client object of the selected peer
         static Client getSelectedPeer();
 
+        /// Get the amount of peers
+        /// @return The total amount of peers
         static int getPeerCount();
 
 
@@ -59,6 +66,7 @@ namespace networking {
         // /// @param mac The mac to be added to the list
         // /// @param number The address number of room/house the bell is hanging at
         // static void addPeer(const uint8_t *mac, uint8_t number);
+
         static std::vector<Client> peers;
         static size_t selectedPeer;
     };
