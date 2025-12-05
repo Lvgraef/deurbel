@@ -8,17 +8,15 @@
 #include "component/sync_button.hpp"
 #include "component/potentiometer.hpp"
 #include "component/ultrasone_sensor.hpp"
+#include "networking/Server.hpp"
 
 #define MAX_CLIENTS 16
 
 uint8_t number = 0;
 
 
-// one minute
+// 30 seconds
 constexpr unsigned long overrideLimit = 30000;
-
-std::vector<utils::Client> button_mode::clients;
-size_t button_mode::selectedClient = 0;
 
 bool volatile button_mode::overridden = false;
 unsigned volatile long button_mode::overrideTime = ULONG_MAX;
@@ -58,12 +56,12 @@ constexpr int sensorChangeFilterTime = 100;
             button_mode::overridden = false;
             const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
 
-            for (int i = 0; i < button_mode::clients.size(); i++) {
+            for (int i = 0; i < networking::Server::getPeerCount(); i++) {\
                 if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
                     if (!ultrasoneStates[i]) {
                         if (millis() - lastChangedSensors[i] > sensorChangeFilterTime) {
                             ultrasoneStates[i] = true;
-                            button_mode::selectedClient = i;
+                            networking::Server::selectPeer(i);
                             lastChangedSensors[i] = millis();
                         }
                     }
@@ -83,7 +81,7 @@ constexpr int sensorChangeFilterTime = 100;
 
 [[noreturn]] void updateLCDDisplay(void* params) {
     while (true) {
-        const std::string displayName = std::to_string(utils::getArrayIndexSafe(button_mode::clients, button_mode::selectedClient).number);
+        const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
 
         display.clear();
         display.print(displayName.c_str());
@@ -149,6 +147,10 @@ void inputNumber() {
 }
 
 void button_mode::setup() {
+    if (!networking::Server::begin()) {
+        Serial.println("server begin failed");
+    }
+
     Serial2.begin(9600, SERIAL_8N1, 7, 8);
     inputNumber();
 
@@ -162,11 +164,14 @@ void button_mode::setup() {
     Wire.setClock(100000);
 
 
-    // For now add 2 clients:
-    clients.push_back({{0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2}, 118});
-    clients.push_back({{0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2}, 116});
+    // Add 2 clients for testing purposes
+    uint8_t one[6] = {0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2};
+    uint8_t two[6] = {0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2};
 
-    for (int i = 0; i < clients.size(); i++) {
+    networking::Server::addPeer(one, 118);
+    networking::Server::addPeer(two, 116);
+
+    for (int i = 0; i < networking::Server::getPeerCount(); i++) {
         if (const auto& sensor = ultrasoneSensors[i]) {
             sensor->init();
         }
@@ -180,7 +185,7 @@ void button_mode::setup() {
 }
 
 void button_mode::loop() {
-    for (int i = 0; i < clients.size(); i++) {
+    for (int i = 0; i < networking::Server::getPeerCount(); i++) {
         if (const auto& sensor = ultrasoneSensors[i]) {
             sensor->update();
         }

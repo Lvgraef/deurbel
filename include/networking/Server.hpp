@@ -6,7 +6,7 @@
 #include "networking/protocol.hpp"
 
 namespace networking {
-    class server {
+    class Server {
     public:
         /// Initialises the Wi-Fi, esp now and registers the callback functions
         /// @return the status of the initialisation
@@ -38,11 +38,28 @@ namespace networking {
         /// @return A boolean if sending the message was successful
         static bool sendToPeer(const uint8_t mac[6], uint8_t msg);
 
-    private:
+        static void selectPeer(int peer);
+
+        static void cyclePeer();
+
+        static Client getSelectedPeer();
+
+        static int getPeerCount();
+
+
+        // TODO make this private again, this is just for testing
 
         /// Method to add a peer to the list which checks if the peer is already in the list
         /// @param mac The mac to be added to the list
-        static void addPeer(const uint8_t *mac);
-        static std::vector<std::array<uint8_t, 6>> peers;
+        /// @param number The address number of room/house the bell is hanging at
+        static void addPeer(const uint8_t mac[6], uint8_t number);
+
+    private:
+        // /// Method to add a peer to the list which checks if the peer is already in the list
+        // /// @param mac The mac to be added to the list
+        // /// @param number The address number of room/house the bell is hanging at
+        // static void addPeer(const uint8_t *mac, uint8_t number);
+        static std::vector<Client> peers;
+        static size_t selectedPeer;
     };
 }
