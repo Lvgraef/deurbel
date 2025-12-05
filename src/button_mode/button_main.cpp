@@ -178,7 +178,7 @@ void button_mode::setup() {
     }
 
     Serial2.begin(9600, SERIAL_8N1, 7, 8);
-    inputNumber();
+    // inputNumber();
 
     potentiometer.init();
     display.init();
