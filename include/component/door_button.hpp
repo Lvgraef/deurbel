@@ -25,6 +25,7 @@ namespace component {
             // Set the override variables to disable the sensors
             button_mode::overrideTime = millis();
             button_mode::overridden = true;
+            button_mode::updateLCDDisplay();
         }
     };
 }

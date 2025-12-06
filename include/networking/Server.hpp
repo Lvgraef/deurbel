@@ -2,7 +2,6 @@
 #include <esp_now.h>
 #include <WiFi.h>
 #include <vector>
-#include <array>
 #include "networking/protocol.hpp"
 
 namespace networking {

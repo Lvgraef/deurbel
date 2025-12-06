@@ -1,6 +1,6 @@
 #include "component/button.hpp"
 
-bool component::debounce(unsigned long& lastActivation, bool& oldState, const bool& currentState) {
+bool component::debounce(unsigned long &lastActivation, bool &oldState, const bool &currentState) {
     if (!oldState && currentState) {
         oldState = currentState;
         if (millis() - lastActivation >= debounceTime) {

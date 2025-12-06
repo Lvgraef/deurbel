@@ -44,6 +44,8 @@ component::DoorButton<34> doorButton;
 component::BellButton<36> bellButton;
 component::SyncButton<15> syncButton;
 
+bool updateDisplay = false;
+
 LiquidCrystal_I2C display(0x27, 16, 2);
 
 /// A short cooldown period (100 ms) so that short errors in measurement won't continuously switch doors.
@@ -56,17 +58,31 @@ constexpr int sensorChangeFilterTime = 100;
             if (const auto& sensor = ultrasoneSensors[i]) {
                 sensor->update();
             }
+            vTaskDelay(20 / portTICK_PERIOD_MS);
         }
-
-        vTaskDelay(200 / portTICK_PERIOD_MS);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }
+
+/// Updates the LCD display so it displays the number of the selected client/peer
+void lcdDislayUpdate() {
+    // while (true) {
+    const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
+
+    display.clear();
+    display.print(displayName.c_str());
+
+    //vTaskDelay(1000 / portTICK_PERIOD_MS);
+    //}
+}
+
 
 /// Gets called when a sensor starts or stops detecting something.
 /// @param state Whether the sensor started or stopped a detection
 /// @param index The index of the sensor
 void ultrasoneStateChanged(bool state, int index) {
     // Send a message to turn light on or off
+    lcdDislayUpdate();
 }
 
 /// Handles the ultrasone sensor logic
@@ -104,17 +120,6 @@ void getUltrasoneDistances() {
     }
 }
 
-/// Updates the LCD display so it displays the number of the selected client/peer
-[[noreturn]] void updateLCDDisplay(void* params) {
-    while (true) {
-        const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
-
-        display.clear();
-        display.print(displayName.c_str());
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-}
 
 void inputNumber() {
     int collected = 0;
@@ -203,12 +208,20 @@ void button_mode::setup() {
     }
 
     xTaskCreate(updateUltrasoneSensors, "ultrasone_sensors", 4096, nullptr, 1, nullptr);
-    xTaskCreate(updateLCDDisplay, "lcddisplay", 4096, nullptr, 1, nullptr);
+    //xTaskCreate(updateLCDDisplay, "lcddisplay", 4096, nullptr, 2, nullptr);
 }
 
 void button_mode::loop() {
     getUltrasoneDistances();
     syncButton.update();
     bellButton.update();
+    if (updateDisplay) {
+        updateDisplay = false;
+        lcdDislayUpdate();
+    }
     delay(10);
+}
+
+void button_mode::updateLCDDisplay() {
+    updateDisplay = true;
 }
