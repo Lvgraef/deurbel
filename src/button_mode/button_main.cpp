@@ -63,14 +63,10 @@ constexpr int sensorChangeFilterTime = 100;
 
 /// Updates the LCD display so it displays the number of the selected client/peer
 void lcdDislayUpdate() {
-    // while (true) {
     const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
 
     display.clear();
     display.print(displayName.c_str());
-
-    //vTaskDelay(1000 / portTICK_PERIOD_MS);
-    //}
 }
 
 
@@ -78,7 +74,12 @@ void lcdDislayUpdate() {
 /// @param state Whether the sensor started or stopped a detection
 /// @param index The index of the sensor
 void ultrasoneStateChanged(bool state, int index) {
-    // Send a message to turn light on or off
+    if (state) {
+        networking::Server::sendToPeer(networking::LED_ON);
+    } else {
+        networking::Server::sendToPeer(networking::LED_OFF);
+    }
+
     lcdDislayUpdate();
 }
 
