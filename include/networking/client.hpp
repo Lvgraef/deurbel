@@ -7,17 +7,12 @@ namespace networking {
     class EspNowReceiver {
     public:
         /// Constructor to set the buzzerPin and the syncButtonPin
-        /// @param buzzerPin
-        /// @param syncButtonPin
-        EspNowReceiver(int buzzerPin, int syncButtonPin);
+        EspNowReceiver() = default;
 
         /// Beginning receiving
         bool begin() const;
 
     private:
-        int buzzerPin;
-        int syncButtonPin;
-
         /// Receive callback function
         /// @param mac The mac address of the sender from which the messages is received
         /// @param incomingData The incoming data

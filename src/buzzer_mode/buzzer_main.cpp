@@ -3,7 +3,33 @@
 #include <algorithm>
 #include <arduino.h>
 
+#include "component/buzzer.hpp"
+#include "component/led.hpp"
+#include "component/sync_button.hpp"
+
 uint8_t buzzer_mode::number = 0;
+component::SyncButton<14> syncButton;
+component::Buzzer buzzer(12);
+component::Led led(13);
+
+bool buzzer_mode::getSyncState() {
+    const bool toReturn = syncButton.state;
+    syncButton.state = false;
+    return toReturn;
+}
+
+void buzzer_mode::beep() {
+    buzzer.beep();
+}
+
+void buzzer_mode::setLED(const bool state) {
+    if (state) {
+        led.on();
+    } else {
+        led.off();
+    }
+}
+
 
 void inputNumber() {
     int collected = 0;
@@ -63,6 +89,9 @@ void inputNumber() {
 
 void buzzer_mode::setup() {
     inputNumber();
+    buzzer.init();
+    syncButton.init();
+    led.init();
 }
 
 void buzzer_mode::loop() {

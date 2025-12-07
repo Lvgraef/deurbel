@@ -17,10 +17,11 @@ namespace component {
                 networking::Server::startPairing();
             }
         }
+
+        static inline volatile bool state = false;
     private:
         static inline unsigned long lastActivation = 0;
         static inline bool oldState = false;
-        static inline volatile bool state = false;
 
         /// This interrupt is called when the pin state changes from high to low or low to high
         static void IRAM_ATTR isr() {
