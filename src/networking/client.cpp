@@ -1,9 +1,8 @@
 #include "networking/client.hpp"
 
-using namespace networking;
+#include "buzzer_mode/buzzer_main.hpp"
 
-static int g_buzzerPin = -1;
-static int g_syncButtonPin = -1;
+using namespace networking;
 
 //TODO extract the hardware components from this method
 void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len) {
@@ -12,9 +11,9 @@ void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len
     const uint8_t cmd = data[0];
 
     if (cmd == HELLO) {
-        if (digitalRead(g_syncButtonPin) == LOW) {
+        if (buzzer_mode::getSyncState()) {
             // Send pairing reply
-            uint8_t reply = ACK;
+            const uint8_t reply = buzzer_mode::number;
             esp_now_send(mac, &reply, 1);
             Serial.println("[PAIR] Reply sent to sender.");
         }
@@ -23,27 +22,27 @@ void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len
 
     if (cmd == BEEP) {
         Serial.println("[CMD] BEEP!");
-        digitalWrite(g_buzzerPin, HIGH);
-        delay(200);
-        digitalWrite(g_buzzerPin, LOW);
+        buzzer_mode::beep();
+        return;
+    }
+
+    if (cmd == LED_ON) {
+        Serial.println("[LED] ON!");
+        buzzer_mode::setLED(true);
+        return;
+    }
+
+    if (cmd == LED_OFF) {
+        Serial.println("[LED] OFF!");
+        buzzer_mode::setLED(false);
         return;
     }
 
     Serial.printf("[WARN] Unknown command: 0x%02X\n", cmd);
 }
 
-EspNowReceiver::EspNowReceiver(int buzzer, int syncButton)
-    : buzzerPin(buzzer), syncButtonPin(syncButton) {}
-
 bool EspNowReceiver::begin() const {
     WiFi.mode(WIFI_STA);
-
-    //TODO reconsider the synButtonPin mode (Change this to pull down)
-    pinMode(buzzerPin, OUTPUT);
-    pinMode(syncButtonPin, INPUT_PULLUP);
-    
-    g_buzzerPin = buzzerPin;
-    g_syncButtonPin = syncButtonPin;
 
     if (esp_now_init() != ESP_OK) {
         Serial.println("ESP-NOW Init Failed");

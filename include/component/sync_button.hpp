@@ -3,6 +3,7 @@
 
 #include "button.hpp"
 #include "utils/utils.hpp"
+#include "networking/Server.hpp"
 
 namespace component {
     template <uint8_t PIN> class SyncButton : public Button<PIN> {
@@ -17,10 +18,11 @@ namespace component {
                 networking::Server::startPairing();
             }
         }
+
+        static inline volatile bool state = false;
     private:
         static inline unsigned long lastActivation = 0;
         static inline bool oldState = false;
-        static inline volatile bool state = false;
 
         /// This interrupt is called when the pin state changes from high to low or low to high
         static void IRAM_ATTR isr() {

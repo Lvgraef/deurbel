@@ -4,7 +4,8 @@ namespace networking {
     /// The different message types
     enum Messages {
         HELLO = 0xA0,
-        ACK = 0xAF,
+        LED_ON = 0xAE,
+        LED_OFF = 0xAF,
         BEEP = 0x01
     };
 

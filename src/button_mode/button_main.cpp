@@ -12,9 +12,6 @@
 
 #define MAX_CLIENTS 16
 
-// todo temporary
-uint8_t number = 0;
-
 // 30 seconds
 constexpr unsigned long overrideLimit = 30000;
 
@@ -40,9 +37,9 @@ std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[10] = {
 bool ultrasoneStates[10] = {false, false, false, false, false, false, false, false, false, false};
 unsigned long lastChangedSensors[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-component::DoorButton<34> doorButton;
-component::BellButton<36> bellButton;
-component::SyncButton<15> syncButton;
+static component::DoorButton<34> doorButton;
+static component::BellButton<36> bellButton;
+static component::SyncButton<15> syncButton;
 
 bool updateDisplay = false;
 
@@ -66,14 +63,10 @@ constexpr int sensorChangeFilterTime = 100;
 
 /// Updates the LCD display so it displays the number of the selected client/peer
 void lcdDislayUpdate() {
-    // while (true) {
     const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
 
     display.clear();
     display.print(displayName.c_str());
-
-    //vTaskDelay(1000 / portTICK_PERIOD_MS);
-    //}
 }
 
 
@@ -81,7 +74,12 @@ void lcdDislayUpdate() {
 /// @param state Whether the sensor started or stopped a detection
 /// @param index The index of the sensor
 void ultrasoneStateChanged(bool state, int index) {
-    // Send a message to turn light on or off
+    if (state) {
+        networking::Server::sendToPeer(networking::LED_ON);
+    } else {
+        networking::Server::sendToPeer(networking::LED_OFF);
+    }
+
     lcdDislayUpdate();
 }
 
@@ -120,70 +118,12 @@ void getUltrasoneDistances() {
     }
 }
 
-
-void inputNumber() {
-    int collected = 0;
-    int result = 0;
-    while (collected < 3) {
-        if (Serial2.available()) {
-            Serial2.println("available");
-            switch(Serial2.read()) {
-                case 0xE1 :
-                    result = result * 10 + 1;
-                    collected++;
-                    break;
-                case 0xE2 :
-                    result = result * 10 + 2;
-                    collected++;
-                    break;
-                case 0xE3 :
-                    result = result * 10 + 3;
-                    collected++;
-                    break;
-                case 0xE4 :
-                    result = result * 10 + 4;
-                    collected++;
-                    break;
-                case 0xE5 :
-                    result = result * 10 + 5;
-                    collected++;
-                    break;
-                case 0xE6 :
-                    result = result * 10 + 6;
-                    collected++;
-                    break;
-                case 0xE7 :
-                    result = result * 10 + 7;
-                    collected++;
-                    break;
-                case 0xE8 :
-                    result = result * 10 + 8;
-                    collected++;
-                    break;
-                case 0xE9 :
-                    result = result * 10 + 9;
-                    collected++;
-                    break;
-                case 0xEB :
-                    result = result * 10 + 0;
-                    collected++;
-                    break;
-                default:
-                    collected++;
-                    break;
-            }
-        }
-    }
-    number = min(255, result);
-}
-
 void button_mode::setup() {
     if (!networking::Server::begin()) {
         Serial.println("server begin failed");
     }
 
     Serial2.begin(9600, SERIAL_8N1, 7, 8);
-    // inputNumber();
 
     potentiometer.init();
     display.init();
@@ -208,7 +148,6 @@ void button_mode::setup() {
     }
 
     xTaskCreate(updateUltrasoneSensors, "ultrasone_sensors", 4096, nullptr, 1, nullptr);
-    //xTaskCreate(updateLCDDisplay, "lcddisplay", 4096, nullptr, 2, nullptr);
 }
 
 void button_mode::loop() {
