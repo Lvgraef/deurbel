@@ -8,9 +8,9 @@
 #include "component/sync_button.hpp"
 
 uint8_t buzzer_mode::number = 0;
-component::SyncButton<14> syncButton;
-component::Buzzer buzzer(12);
-component::Led led(13);
+static component::SyncButton<14> syncButton;
+static component::Buzzer buzzer(12);
+static component::Led led(13);
 
 bool buzzer_mode::getSyncState() {
     const bool toReturn = syncButton.state;

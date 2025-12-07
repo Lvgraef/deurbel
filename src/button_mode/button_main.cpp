@@ -37,9 +37,9 @@ std::unique_ptr<component::UltrasoneSensor> ultrasoneSensors[10] = {
 bool ultrasoneStates[10] = {false, false, false, false, false, false, false, false, false, false};
 unsigned long lastChangedSensors[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-component::DoorButton<34> doorButton;
-component::BellButton<36> bellButton;
-component::SyncButton<15> syncButton;
+static component::DoorButton<34> doorButton;
+static component::BellButton<36> bellButton;
+static component::SyncButton<15> syncButton;
 
 bool updateDisplay = false;
 

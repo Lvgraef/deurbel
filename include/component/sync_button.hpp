@@ -3,6 +3,7 @@
 
 #include "button.hpp"
 #include "utils/utils.hpp"
+#include "networking/Server.hpp"
 
 namespace component {
     template <uint8_t PIN> class SyncButton : public Button<PIN> {
