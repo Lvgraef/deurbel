@@ -63,10 +63,15 @@ constexpr int sensorChangeFilterTime = 100;
 
 /// Updates the LCD display so it displays the number of the selected client/peer
 void lcdDislayUpdate() {
-    const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
+    if (const auto peer = networking::Server::getSelectedPeer(); peer.has_value()) {
+        const std::string displayName = std::to_string(peer.value().number);
+        display.clear();
+        display.print(displayName.c_str());
+    } else {
+        display.clear();
+        display.print("No peers!");
+    }
 
-    display.clear();
-    display.print(displayName.c_str());
 }
 
 
@@ -92,7 +97,7 @@ void getUltrasoneDistances() {
 
         const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
 
-        for (int i = 0; i < networking::Server::getPeerCount(); i++) {\
+        for (int i = 0; i < networking::Server::getPeerCount(); i++) {
             // Filter out 0 measurements (invalid) and check if the sensor is within the threshold
             if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
                 // only do something on change

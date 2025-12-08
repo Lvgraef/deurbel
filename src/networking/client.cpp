@@ -11,6 +11,9 @@ void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len
     const uint8_t cmd = data[0];
 
     if (cmd == HELLO) {
+        if (!buzzer_mode::getSyncState()) {
+            return;
+        }
         if (esp_now_is_peer_exist(mac) == false) {
             esp_now_peer_info_t peer{};
             memcpy(peer.peer_addr, mac, 6);
@@ -22,11 +25,9 @@ void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len
             }
         }
 
-        if (buzzer_mode::getSyncState()) {
-            const uint8_t reply = buzzer_mode::number;
-            esp_now_send(mac, &reply, 1);
-            Serial.println("[PAIR] Reply sent to sender.");
-        }
+        const uint8_t reply = buzzer_mode::number;
+        esp_now_send(mac, &reply, 1);
+        Serial.println("[PAIR] Reply sent to sender.");
         return;
     }
 

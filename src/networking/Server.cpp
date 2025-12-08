@@ -7,9 +7,11 @@ using namespace networking;
 static uint8_t broadcastAddress[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 std::vector<networking::Client> networking::Server::peers;
-size_t networking::Server::selectedPeer;
+size_t networking::Server::selectedPeer = 0;
 
 bool networking::Server::begin() {
+    Serial.println("[SERVER] Begin");
+
     WiFi.mode(WIFI_STA);
     if (esp_now_init() != ESP_OK) return false;
 
@@ -53,7 +55,11 @@ void networking::Server::onDataSent(const uint8_t *mac, esp_now_send_status_t st
 }
 
 bool networking::Server::sendToPeer(const uint8_t msg) {
-    return esp_now_send(getSelectedPeer().clientMacAddress, &msg, 1) == ESP_OK;
+    if (const auto peer = getSelectedPeer(); peer.has_value()) {
+        return esp_now_send(peer.value().clientMacAddress, &msg, 1) == ESP_OK;
+    }
+    Serial.println("[ERROR] No peer to send to");
+    return false;
 }
 
 bool networking::Server::sendToPeer(const uint8_t mac[6], uint8_t msg) {
@@ -82,7 +88,10 @@ void networking::Server::selectPeer(const int peer) {
     selectedPeer = peer;
 }
 
-networking::Client networking::Server::getSelectedPeer() {
+std::optional<networking::Client> networking::Server::getSelectedPeer() {
+    if (peers.size() == 0) {
+        return std::nullopt;
+    }
     return utils::getArrayIndexSafe(peers, selectedPeer);
 }
 
