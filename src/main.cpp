@@ -8,14 +8,17 @@ bool buzzerMode = false;
 
 void setup() {
     // Set the mode (either button or buzzer)
+    pinMode(26, INPUT);
     buzzerMode = digitalRead(26);
 
     Serial.begin(9600);
 
     // Setup depending on the mode
     if (buzzerMode) {
+        Serial.println("Started in buzzer mode");
         buzzer_mode::setup();
     } else {
+        Serial.println("Started in button mode");
         button_mode::setup();
     }
 }

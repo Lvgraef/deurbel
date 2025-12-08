@@ -10,7 +10,5 @@ void component::Buzzer::init() const {
 }
 
 void component::Buzzer::beep() const {
-    digitalWrite(pin, HIGH);
-    delay(200);
-    digitalWrite(pin, LOW);
+    tone(12, 400, 1000);
 }

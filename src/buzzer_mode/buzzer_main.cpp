@@ -6,6 +6,7 @@
 #include "component/buzzer.hpp"
 #include "component/led.hpp"
 #include "component/sync_button.hpp"
+#include "networking/client.hpp"
 
 uint8_t buzzer_mode::number = 0;
 static component::SyncButton<14> syncButton;
@@ -88,7 +89,12 @@ void inputNumber() {
 }
 
 void buzzer_mode::setup() {
+    Serial2.begin(9600, SERIAL_8N1, 7, 8);
+    networking::EspNowReceiver rec{};
     inputNumber();
+    if (rec.begin()) {
+        Serial.println("RECEIVING started");
+    }
     buzzer.init();
     syncButton.init();
     led.init();

@@ -46,7 +46,7 @@ namespace networking {
 
         /// Get the currently selected peer
         /// @return Returns a Client object of the selected peer
-        static Client getSelectedPeer();
+        static std::optional<Client> getSelectedPeer();
 
         /// Get the amount of peers
         /// @return The total amount of peers

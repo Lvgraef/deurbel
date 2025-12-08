@@ -50,6 +50,7 @@ constexpr int sensorChangeFilterTime = 100;
 
 /// Update all the ultrasone sensors
 [[noreturn]] void updateUltrasoneSensors(void* params) {
+    //Serial.println("Update Ultrasone Sensors");
     while (true) {
         for (int i = 0; i < networking::Server::getPeerCount(); i++) {
             if (const auto& sensor = ultrasoneSensors[i]) {
@@ -63,10 +64,15 @@ constexpr int sensorChangeFilterTime = 100;
 
 /// Updates the LCD display so it displays the number of the selected client/peer
 void lcdDislayUpdate() {
-    const std::string displayName = std::to_string(networking::Server::getSelectedPeer().number);
+    if (const auto peer = networking::Server::getSelectedPeer(); peer.has_value()) {
+        const std::string displayName = std::to_string(peer.value().number);
+        display.clear();
+        display.print(displayName.c_str());
+    } else {
+        display.clear();
+        display.print("No peers!");
+    }
 
-    display.clear();
-    display.print(displayName.c_str());
 }
 
 
@@ -74,6 +80,7 @@ void lcdDislayUpdate() {
 /// @param state Whether the sensor started or stopped a detection
 /// @param index The index of the sensor
 void ultrasoneStateChanged(bool state, int index) {
+    Serial.println("Sensor state changed");
     if (state) {
         networking::Server::sendToPeer(networking::LED_ON);
     } else {
@@ -91,8 +98,9 @@ void getUltrasoneDistances() {
         button_mode::overridden = false;
 
         const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
+        Serial.println(distanceInput, DEC);
 
-        for (int i = 0; i < networking::Server::getPeerCount(); i++) {\
+        for (int i = 0; i < networking::Server::getPeerCount(); i++) {
             // Filter out 0 measurements (invalid) and check if the sensor is within the threshold
             if (ultrasoneSensors[i]->getDistance() != 0 && ultrasoneSensors[i]->getDistance() < distanceInput) {
                 // only do something on change
@@ -134,19 +142,6 @@ void button_mode::setup() {
 
     Wire.setClock(100000);
 
-
-    // Add 2 clients for testing purposes
-    uint8_t one[6] = {0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2};
-    uint8_t two[6] = {0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2};
-    networking::Server::addPeer(one, 118);
-    networking::Server::addPeer(two, 116);
-
-    for (int i = 0; i < networking::Server::getPeerCount(); i++) {
-        if (const auto& sensor = ultrasoneSensors[i]) {
-            sensor->init();
-        }
-    }
-
     xTaskCreate(updateUltrasoneSensors, "ultrasone_sensors", 4096, nullptr, 1, nullptr);
 }
 
@@ -164,3 +159,8 @@ void button_mode::loop() {
 void button_mode::updateLCDDisplay() {
     updateDisplay = true;
 }
+
+void button_mode::initializeSensor(const int sensor) {
+    ultrasoneSensors[sensor]->init();
+}
+
