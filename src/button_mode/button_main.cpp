@@ -134,13 +134,6 @@ void button_mode::setup() {
 
     Wire.setClock(100000);
 
-
-    // Add 2 clients for testing purposes
-    uint8_t one[6] = {0xAA, 0x1A, 0x3F, 0xEE, 0x3F, 0xB2};
-    uint8_t two[6] = {0x06, 0x2E, 0xBD, 0x40, 0xE3, 0xC2};
-    networking::Server::addPeer(one, 118);
-    networking::Server::addPeer(two, 116);
-
     for (int i = 0; i < networking::Server::getPeerCount(); i++) {
         if (const auto& sensor = ultrasoneSensors[i]) {
             sensor->init();

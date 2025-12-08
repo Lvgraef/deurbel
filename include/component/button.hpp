@@ -24,7 +24,8 @@ namespace component {
 
         /// Initialise the button
         void init() const {
-            pinMode(PIN, pullup ? INPUT_PULLUP : INPUT_PULLDOWN);
+            // pinMode(PIN, pullup ? INPUT_PULLUP : INPUT_PULLDOWN);
+            pinMode(PIN, INPUT);
             // This attaches an ISR which is triggered when the state of the pin changes from high to low or low to high
             attachInterrupt(digitalPinToInterrupt(PIN), callback, CHANGE);
         }

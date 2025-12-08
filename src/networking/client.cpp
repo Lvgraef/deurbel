@@ -11,8 +11,18 @@ void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len
     const uint8_t cmd = data[0];
 
     if (cmd == HELLO) {
+        if (esp_now_is_peer_exist(mac) == false) {
+            esp_now_peer_info_t peer{};
+            memcpy(peer.peer_addr, mac, 6);
+            peer.channel = 0;
+            peer.encrypt = false;
+            if (esp_now_add_peer(&peer) == ESP_OK) {
+                Serial.printf("[PAIR] Peer added: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            }
+        }
+
         if (buzzer_mode::getSyncState()) {
-            // Send pairing reply
             const uint8_t reply = buzzer_mode::number;
             esp_now_send(mac, &reply, 1);
             Serial.println("[PAIR] Reply sent to sender.");
