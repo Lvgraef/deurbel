@@ -38,14 +38,11 @@ void networking::Server::onDataRecv(const uint8_t *mac, const uint8_t *data, int
 
     uint8_t msgType = data[0];
 
-    if (msgType == HELLO) {
-        // New peer discovery
-        Serial.println("[PAIR] HELLO received, adding peer...");
-        addPeer(mac, msgType);
+    // New peer discovery
+    addPeer(mac, msgType);
 
-        // Reply back with HELLO so the sender can add us
-        esp_now_send(mac, &msgType, 1);
-    }
+    // Reply back with HELLO so the sender can add us
+    esp_now_send(mac, &msgType, 1);
 }
 
 void networking::Server::onDataSent(const uint8_t *mac, esp_now_send_status_t status) {

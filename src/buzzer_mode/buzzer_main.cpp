@@ -89,8 +89,9 @@ void inputNumber() {
 }
 
 void buzzer_mode::setup() {
+    Serial2.begin(9600, SERIAL_8N1, 7, 8);
     networking::EspNowReceiver rec{};
-    // inputNumber();
+    inputNumber();
     if (rec.begin()) {
         Serial.println("RECEIVING started");
     }

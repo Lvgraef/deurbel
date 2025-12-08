@@ -79,6 +79,7 @@ void lcdDislayUpdate() {
 /// @param state Whether the sensor started or stopped a detection
 /// @param index The index of the sensor
 void ultrasoneStateChanged(bool state, int index) {
+    Serial.println("Sensor state changed");
     if (state) {
         networking::Server::sendToPeer(networking::LED_ON);
     } else {
@@ -124,6 +125,7 @@ void getUltrasoneDistances() {
 }
 
 void button_mode::setup() {
+    tone(12, 500);
     if (!networking::Server::begin()) {
         Serial.println("server begin failed");
     }

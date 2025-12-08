@@ -26,7 +26,9 @@ void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len
         }
 
         const uint8_t reply = buzzer_mode::number;
-        esp_now_send(mac, &reply, 1);
+        if (esp_now_send(mac, &reply, 1) != ESP_OK) {
+            Serial.println("[PAIR] Send Failed");
+        }
         Serial.println("[PAIR] Reply sent to sender.");
         return;
     }
@@ -46,6 +48,11 @@ void EspNowReceiver::onDataRecv(const uint8_t *mac, const uint8_t *data, int len
     if (cmd == LED_OFF) {
         Serial.println("[LED] OFF!");
         buzzer_mode::setLED(false);
+        return;
+    }
+
+    if (cmd == 0) {
+        Serial.println("[CMD] 0 message received. Ok.");
         return;
     }
 
