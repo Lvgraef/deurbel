@@ -1,4 +1,6 @@
 #include "networking/Server.hpp"
+
+#include "button_mode/button_main.hpp"
 #include "utils/utils.hpp"
 
 using namespace networking;
@@ -79,6 +81,9 @@ void networking::Server::addPeer(const uint8_t *mac, const uint8_t number) {
         Serial.printf("[PAIR] Peer added: %02X:%02X:%02X:%02X:%02X:%02X\n",
                       mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     }
+
+    const size_t peerCount = peers.size();
+    button_mode::initializeSensor(peerCount - 1);
 }
 
 void networking::Server::selectPeer(const int peer) {

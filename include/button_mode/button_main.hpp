@@ -10,6 +10,9 @@ namespace button_mode {
     /// Call this to update the LCD
     void updateLCDDisplay();
 
+    /// Initialize a specific sensor
+    void initializeSensor(int sensor);
+
     /// These are used by the door switching button to disable the sensors.
     extern volatile bool overridden;
     extern volatile unsigned long overrideTime;

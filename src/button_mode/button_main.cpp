@@ -50,6 +50,7 @@ constexpr int sensorChangeFilterTime = 100;
 
 /// Update all the ultrasone sensors
 [[noreturn]] void updateUltrasoneSensors(void* params) {
+    //Serial.println("Update Ultrasone Sensors");
     while (true) {
         for (int i = 0; i < networking::Server::getPeerCount(); i++) {
             if (const auto& sensor = ultrasoneSensors[i]) {
@@ -97,6 +98,7 @@ void getUltrasoneDistances() {
         button_mode::overridden = false;
 
         const int16_t distanceInput = utils::getDistanceInput(potentiometer.getValue());
+        Serial.println(distanceInput, DEC);
 
         for (int i = 0; i < networking::Server::getPeerCount(); i++) {
             // Filter out 0 measurements (invalid) and check if the sensor is within the threshold
@@ -125,7 +127,6 @@ void getUltrasoneDistances() {
 }
 
 void button_mode::setup() {
-    tone(12, 500);
     if (!networking::Server::begin()) {
         Serial.println("server begin failed");
     }
@@ -140,12 +141,6 @@ void button_mode::setup() {
     doorButton.init();
 
     Wire.setClock(100000);
-
-    for (int i = 0; i < networking::Server::getPeerCount(); i++) {
-        if (const auto& sensor = ultrasoneSensors[i]) {
-            sensor->init();
-        }
-    }
 
     xTaskCreate(updateUltrasoneSensors, "ultrasone_sensors", 4096, nullptr, 1, nullptr);
 }
@@ -164,3 +159,8 @@ void button_mode::loop() {
 void button_mode::updateLCDDisplay() {
     updateDisplay = true;
 }
+
+void button_mode::initializeSensor(const int sensor) {
+    ultrasoneSensors[sensor]->init();
+}
+
